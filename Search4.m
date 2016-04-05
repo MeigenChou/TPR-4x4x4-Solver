@@ -115,12 +115,10 @@ extern int craw2sym[];
 }
 
 -(NSString *) solution:(NSString *)facelet {
-    int f[96];
-    NSString *ts = @"URFDLB";
-    for (int i=0; i<96; i++) {
-        f[i] = [Util indexOf:ts c:[facelet characterAtIndex:i]];
+    int check = [self verify:facelet];
+    if (check != 0) {
+        return [NSString stringWithFormat:@"Error %d", ABS(check)];
     }
-    c = [[FullCube alloc] initWithFacelet:f];
     [self doSearch];
     return solution;
 }
@@ -129,6 +127,23 @@ extern int craw2sym[];
     c = [[FullCube alloc] initWithMove:moveseq len:movelen];
     [self doSearch];
     return solution;
+}
+
+-(int)verify:(NSString *)facelets {
+    int count[6];
+    int f[96];
+    NSString *ts = @"URFDLB";
+    for (int i=0; i<6; i++) count[i] = 0;
+    for (int i=0; i<96; i++) {
+        f[i] = [Util indexOf:ts c:[facelets characterAtIndex:i]];
+        if (f[i] == NSNotFound) return -1;
+        count[f[i]]++;
+    }
+    for (int i=0; i<6; i++)
+        if (count[i] != 16)
+            return -1;
+    c = [[FullCube alloc] initWithFacelet:f];
+    return [c verify];
 }
 
 -(void)doSearch {
@@ -224,11 +239,11 @@ extern int craw2sym[];
         [solcube move:move3std[move3[i]]];
     }
     NSString *facelet = [solcube to333Facelet];
-    NSLog(@"cube 3x3: %@", facelet);
+    //NSLog(@"cube 3x3: %@", facelet);
     NSString *sol333 = [cube3 solutionForFacelets:facelet md:21 nt:5000 tm:100 v:0];
-    //NSLog(@"%@", sol333);
+    //NSLog(@"sol %@", sol333);
     if ([sol333 hasPrefix:@"Error"]) {
-        solution = @"Error";
+        solution = sol333;
     } else {
         NSMutableArray *sol3 = [Util tomove:sol333];
         for (int i=0; i<sol3.count; i++) {

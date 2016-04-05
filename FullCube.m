@@ -378,6 +378,41 @@ int move2rot[] = {35, 1, 34, 2, 4, 6, 22, 5, 19};
     return [[self getEdge] checkEdge];
 }
 
+/**
+ * Check a cube for solvability. Return the error code.
+ * 0: Cube is solvable
+ * -2: Not all 24 edges exist exactly once
+ * -3: Not all 24 centers exist exactly once
+ * -4: Not all corners exist exactly once
+ * -5: Twist error: One corner has to be twisted
+ */
+-(int)verify {
+    int edgeMask = 0;
+    for (int e=0; e<24; e++) {
+        edgeMask |= (1 << edge->ep[e]);
+    }
+    if (edgeMask != 0xffffff)
+        return -2;  // missing edges
+    int centMask = 0;
+    for (int c=0; c<24; c++) {
+        int ct = center->ct[c];
+        centMask += 1 << (ct << 2);
+    }
+    if (centMask != 0x444444)
+        return -3;  //missing centers
+    int cornMask = 0;
+    for (int c=0; c<8; c++)
+        cornMask |= (1 << corner->cp[c]);
+    if (cornMask != 0xff)
+        return -4;  // missing corners
+    int sum = 0;
+    for (int i=0; i<8; i++)
+        sum += corner->co[i];
+    if (sum % 3 != 0)
+        return -5;  // twisted corner
+    return 0;   //cube ok
+}
+
 //public String getMoveString(boolean inverse, boolean rotation)
 -(NSString *)getMoveString:(bool)inverse rot:(bool)rotation {
     //int fixedMoves[] = new int[moveLength - (add1 ? 2 : 0)];

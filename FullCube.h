@@ -48,5 +48,5 @@
 -(NSString *)toString;
 -(void)print;
 -(id)initCorner:(int[])cp co:(int[])co;
-
+-(int)verify;
 @end
